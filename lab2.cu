@@ -280,10 +280,11 @@ void part1(){
 
 	gettimeofday(&t1, NULL);
 	conv1<<<dimGrid, dimBlock>>>(d_input,d_output,d_kernel);
-	gettimeofday(&t2, NULL);
+	
 	
 	//cudaDeviceSynchronize();
 	cudaError_t cudaerr = cudaDeviceSynchronize();
+	gettimeofday(&t2, NULL);
     if (cudaerr != cudaSuccess)
         printf("kernel launch failed with error \"%s\".\n",
                cudaGetErrorString(cudaerr));
@@ -347,13 +348,14 @@ void part2(){
 
 	gettimeofday(&t1, NULL);
 	conv2<<<dimGrid, dimBlock>>>(d_input,d_output,d_kernel);
-	gettimeofday(&t2, NULL);
 	
 	//cudaDeviceSynchronize();
 	cudaError_t cudaerr = cudaDeviceSynchronize();
+	gettimeofday(&t2, NULL);
     if (cudaerr != cudaSuccess)
         printf("kernel launch failed with error \"%s\".\n",
                cudaGetErrorString(cudaerr));
+
     cudaMemcpy(output, d_output, output_bytes, cudaMemcpyDeviceToHost);
 	double sum = 0;
 	for(int i=0;i<K;i++) {
