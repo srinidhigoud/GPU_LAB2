@@ -32,7 +32,7 @@ using namespace std;
 
 void part3(){
 	struct timeval t1, t2; 
-	float total_t;
+	double total_t;
 	cudnnHandle_t cudnn;
 	checkCUDNN(cudnnCreate(&cudnn));
 	cudnnTensorDescriptor_t input_descriptor, output_descriptor;
@@ -137,7 +137,7 @@ void part3(){
 		// cout<<endl;
 	} 
 
-	total_t = ((float)(t2.tv_sec-t1.tv_sec)*1000 + t2.tv_usec-t1.tv_usec)/1000;
+	total_t = ((double)(t2.tv_sec-t1.tv_sec)*1000 + t2.tv_usec-t1.tv_usec)/1000;
 
 
 	printf("%4.3lf, %4.3lf ms\n",sum,total_t);
@@ -251,7 +251,7 @@ void part1(){
     int blockDimY = BLOCK_SIZE;              // Y ~ ROW
     int blockDimZ = BLOCK_SIZE;  			// Z ~ Depth
     struct timeval t1, t2; 
-    float total_t;
+    double total_t;
 	int image_bytes = 1 * C * (H+2) * (W+2) * sizeof(double);
 	int output_bytes = 1 * K * H * W * sizeof(double);
 	int kernel_bytes = 1 * K * C * FH * FW * sizeof(double);
@@ -300,7 +300,7 @@ void part1(){
 		} 
 		// cout<<endl;
 	} 
-	total_t = ((float)(t2.tv_sec-t1.tv_sec)*1000 + t2.tv_usec-t1.tv_usec)/1000;
+	total_t = ((double)(t2.tv_sec-t1.tv_sec)*1000 + t2.tv_usec-t1.tv_usec)/1000;
 
 
 	printf("%4.3lf, %4.3lf ms\n",sum,total_t);
@@ -319,7 +319,7 @@ void part2(){
     int blockDimY = BLOCK_SIZE;              // Y ~ ROW
     int blockDimZ = BLOCK_SIZE;  			// Z ~ Depth
     struct timeval t1, t2; 
-    float total_t;
+    double total_t;
 	int image_bytes = 1 * C * (H+2) * (W+2) * sizeof(double);
 	int output_bytes = 1 * K * H * W * sizeof(double);
 	int kernel_bytes = 1 * K * C * FH * FW * sizeof(double);
@@ -368,7 +368,7 @@ void part2(){
 		} 
 		// cout<<endl;
 	} 
-	total_t = ((float)(t2.tv_sec-t1.tv_sec)*1000 + t2.tv_usec-t1.tv_usec)/1000;
+	total_t = ((double)(t2.tv_sec-t1.tv_sec)*1000 + t2.tv_usec-t1.tv_usec)/1000;
 
 	printf("%4.3lf, %4.3lf ms\n",sum,total_t);
 	
