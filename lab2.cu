@@ -7,6 +7,8 @@
 
 ***************************************************/
 
+/* module load cudnn/9.0v7.0.5 */
+
 #include <stdio.h>
 #include <iostream>
 #include <assert.h>
@@ -88,7 +90,7 @@ void part3(){
 											1,
 											1,
 											1,
-											DNN_CONVOLUTION,
+											CUDNN_CONVOLUTION,
 											CUDNN_DATA_DOUBLE));
 	
 	size_t workspace_bytes = 0;
