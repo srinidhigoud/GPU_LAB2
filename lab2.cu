@@ -159,7 +159,7 @@ void part3(){
 		// cout<<endl;
 	} 
 
-	total_t = ((double)(t2.tv_sec-t1.tv_sec)*1000 + t2.tv_usec-t1.tv_usec)/1000;
+	total_t = (double)((t2.tv_sec-t1.tv_sec)*1000 + t2.tv_usec-t1.tv_usec)/1000;
 
 
 	printf("%4.3lf, %4.3lf ms\n",sum,total_t);
@@ -323,7 +323,7 @@ void part1(){
 		// cout<<endl;
 	} 
 	
-	total_t = ((double)(t2.tv_sec-t1.tv_sec)*1000 + t2.tv_usec-t1.tv_usec)/1000;
+	total_t = (double)((t2.tv_sec-t1.tv_sec)*1000 + t2.tv_usec-t1.tv_usec)/1000;
 
 	printf("%4.3lf, %4.3lf ms\n",sum,total_t);
 	
@@ -396,7 +396,7 @@ void part2(){
 		// cout<<endl;
 	} 
 	
-	total_t = ((double)(t2.tv_sec-t1.tv_sec)*1000 + t2.tv_usec-t1.tv_usec)/1000;
+	total_t = (double)((t2.tv_sec-t1.tv_sec)*1000 + t2.tv_usec-t1.tv_usec)/1000;
 
 	printf("%4.3lf, %4.3lf ms\n",sum,total_t);
 	
