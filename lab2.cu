@@ -1,3 +1,12 @@
+/***************************************************
+
+	Srinidhi Goud Myadaboyina
+	N12449860	
+	Lab 2
+
+
+***************************************************/
+
 #include <stdio.h>
 #include <iostream>
 #include <assert.h>
@@ -13,8 +22,8 @@
 #define FW 3
 #define FH 3
 #define K 5
-#define BLOCK_SIZE 4
-#define TILE_SIZE 6
+#define BLOCK_SIZE 8
+#define TILE_SIZE 10
 #define RADIUS (TILE_SIZE - BLOCK_SIZE)
 
 #define checkCUDNN(expression)                               \
@@ -31,51 +40,59 @@ using namespace std;
 
 
 void part3(){
+
 	struct timeval t1, t2; 
 	double total_t;
 	cudnnHandle_t cudnn;
+
 	checkCUDNN(cudnnCreate(&cudnn));
+
 	cudnnTensorDescriptor_t input_descriptor, output_descriptor;
 	cudnnFilterDescriptor_t kernel_descriptor;
 	cudnnConvolutionDescriptor_t convolution_descriptor;
 	const double alpha = 1, beta = 0;
 	cudnnConvolutionFwdAlgo_t convolution_algorithm = CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM;
+
 	checkCUDNN(cudnnCreateTensorDescriptor(&input_descriptor));
 	checkCUDNN(cudnnSetTensor4dDescriptor(input_descriptor,
-		                              /*format=*/CUDNN_TENSOR_NCHW,
-		                              /*dataType=*/CUDNN_DATA_DOUBLE,
-		                              /*batch_size=*/1,
-		                              /*channels=*/C,
-		                              /*image_height=*/H,
-		                              /*image_width=*/W));
+										CUDNN_TENSOR_NCHW,
+										CUDNN_DATA_DOUBLE,
+										1,
+										C,
+										H,
+										W));
+
 	checkCUDNN(cudnnCreateTensorDescriptor(&output_descriptor));
 	checkCUDNN(cudnnSetTensor4dDescriptor(output_descriptor,
-	                                  /*format=*/CUDNN_TENSOR_NCHW,
-	                                  /*dataType=*/CUDNN_DATA_DOUBLE,
-	                                  /*batch_size=*/1,
-	                                  /*channels=*/K,
-	                                  /*image_height=*/H,
-	                                  /*image_width=*/W));
+										CUDNN_TENSOR_NCHW,
+										CUDNN_DATA_DOUBLE,
+										1,
+										K,
+										H,
+										W));
 
 	checkCUDNN(cudnnCreateFilterDescriptor(&kernel_descriptor));
 	checkCUDNN(cudnnSetFilter4dDescriptor(kernel_descriptor,
-                                      /*dataType=*/CUDNN_DATA_DOUBLE,
-                                      /*format=*/CUDNN_TENSOR_NCHW,
-                                      /*out_channels=*/K,
-                                      /*in_channels=*/C,
-                                      /*kernel_height=*/FH,
-                                      /*kernel_width=*/FW));
+										CUDNN_DATA_DOUBLE,
+										CUDNN_TENSOR_NCHW,
+										K,
+										C,
+										FH,
+										FW));
+
 	checkCUDNN(cudnnCreateConvolutionDescriptor(&convolution_descriptor));
 	checkCUDNN(cudnnSetConvolution2dDescriptor(convolution_descriptor,
-                                       /*pad_height=*/1,
-                                       /*pad_width=*/1,
-                                       /*vertical_stride=*/1,
-                                       /*horizontal_stride=*/1,
-                                       /*dilation_height=*/1,
-                                       /*dilation_width=*/1,
-                                       /*mode=*/CUDNN_CONVOLUTION,
-                                       /*computeType=*/CUDNN_DATA_DOUBLE));
+											1,
+											1,
+											1,
+											1,
+											1,
+											1,
+											DNN_CONVOLUTION,
+											CUDNN_DATA_DOUBLE));
+	
 	size_t workspace_bytes = 0;
+
 	checkCUDNN(cudnnGetConvolutionForwardWorkspaceSize(cudnn,
 	                                               input_descriptor,
 	                                               kernel_descriptor,
@@ -94,8 +111,10 @@ void part3(){
 	double *image = (double*)malloc(image_bytes);
 	double *output = (double*)malloc(output_bytes);
 	double *h_kernel = (double*)malloc(kernel_bytes);
+	
 	for(int i=0;i<C;i++) for(int j=0;j<H;j++) for(int k=0;k<W;k++) image[i*H*W+j*W+k] = i*(j+k);
 	for(int a=0;a<K;a++) for(int b=0;b<C;b++) for(int c=0;c<FH;c++) for(int d=0;d<FW;d++) h_kernel[a*C*FH*FW+b*FH*FW+c*FW+d] = (a+b)*(c+d);
+	
 	double* d_input{nullptr};
 	cudaMalloc(&d_input, image_bytes);
 	cudaMemcpy(d_input, image, image_bytes, cudaMemcpyHostToDevice);
@@ -107,6 +126,7 @@ void part3(){
 	double* d_kernel{nullptr};
 	cudaMalloc(&d_kernel, kernel_bytes);
 	cudaMemcpy(d_kernel, h_kernel, kernel_bytes, cudaMemcpyHostToDevice);
+	
 	gettimeofday(&t1, NULL);
 
 	checkCUDNN(cudnnConvolutionForward(cudnn,
@@ -154,8 +174,8 @@ void part3(){
 	cudnnDestroyTensorDescriptor(output_descriptor);
 	cudnnDestroyFilterDescriptor(kernel_descriptor);
 	cudnnDestroyConvolutionDescriptor(convolution_descriptor);
-
 	cudnnDestroy(cudnn);
+
 }
 
 
@@ -179,6 +199,7 @@ void __global__ conv1(double * input, double * output, double * filter){
 }
 
 void __global__ conv2(double * input, double * output, double * filter){
+	
 	int const lrow = blockIdx.y * blockDim.y + threadIdx.y;
 	int const lcol = blockIdx.x * blockDim.x + threadIdx.x;
 	int row = lrow;
@@ -189,6 +210,7 @@ void __global__ conv2(double * input, double * output, double * filter){
 	int stridez = blockDim.z * gridDim.z;
 	int x = threadIdx.y;
 	int y = threadIdx.x;
+	
 	__shared__ double As[C][TILE_SIZE][TILE_SIZE];
 	
 	if(row<H+2 && col<W+2){
@@ -276,8 +298,6 @@ void part1(){
     dim3 dimBlock(blockDimX, blockDimY, blockDimZ);
     dim3 dimGrid(W/ dimBlock.x, H/ dimBlock.y);
 	
-	
-
 	gettimeofday(&t1, NULL);
 	conv1<<<dimGrid, dimBlock>>>(d_input,d_output,d_kernel);
 	
@@ -300,8 +320,8 @@ void part1(){
 		} 
 		// cout<<endl;
 	} 
+	
 	total_t = ((double)(t2.tv_sec-t1.tv_sec)*1000 + t2.tv_usec-t1.tv_usec)/1000;
-
 
 	printf("%4.3lf, %4.3lf ms\n",sum,total_t);
 	
@@ -312,9 +332,11 @@ void part1(){
 	cudaFree(d_kernel);
 	cudaFree(d_input);
 	cudaFree(d_output);
+
 }
 
 void part2(){
+	
 	int blockDimX = BLOCK_SIZE;              // X ~ COL
     int blockDimY = BLOCK_SIZE;              // Y ~ ROW
     int blockDimZ = BLOCK_SIZE;  			// Z ~ Depth
@@ -326,6 +348,7 @@ void part2(){
 	double *image = (double*)malloc(image_bytes);
 	double *output = (double*)malloc(output_bytes);
 	double *h_kernel = (double*)malloc(kernel_bytes);
+	
 	for(int i=0;i<C;i++) for(int j=0;j<H+2;j++) for(int k=0;k<W+2;k++) image[i*(H+2)*(W+2)+(j)*(W+2)+k] = (j==0 || j==H+1 || k==0 || k==W+1)?0:i*(j-1+k-1);
 	for(int a=0;a<K;a++) for(int b=0;b<C;b++) for(int c=0;c<FH;c++) for(int d=0;d<FW;d++) h_kernel[a*C*FH*FW+b*FH*FW+c*FW+d] = (a+b)*(c+d);
 	
@@ -344,20 +367,22 @@ void part2(){
     dim3 dimBlock(blockDimX, blockDimY, blockDimZ);
     dim3 dimGrid(W/ dimBlock.x, H/ dimBlock.y);
 	
-	
-
 	gettimeofday(&t1, NULL);
 	conv2<<<dimGrid, dimBlock>>>(d_input,d_output,d_kernel);
 	
 	//cudaDeviceSynchronize();
 	cudaError_t cudaerr = cudaDeviceSynchronize();
+	
 	gettimeofday(&t2, NULL);
+    
     if (cudaerr != cudaSuccess)
         printf("kernel launch failed with error \"%s\".\n",
                cudaGetErrorString(cudaerr));
 
     cudaMemcpy(output, d_output, output_bytes, cudaMemcpyDeviceToHost);
+	
 	double sum = 0;
+	
 	for(int i=0;i<K;i++) {
 		for(int j=0;j<H;j++) {
 			for(int k=0;k<W;k++){
@@ -368,6 +393,7 @@ void part2(){
 		} 
 		// cout<<endl;
 	} 
+	
 	total_t = ((double)(t2.tv_sec-t1.tv_sec)*1000 + t2.tv_usec-t1.tv_usec)/1000;
 
 	printf("%4.3lf, %4.3lf ms\n",sum,total_t);
@@ -379,6 +405,7 @@ void part2(){
 	cudaFree(d_kernel);
 	cudaFree(d_input);
 	cudaFree(d_output);
+
 }
 
 
@@ -387,5 +414,7 @@ int main(){
 	part1();
 	part2();
 	part3();
+
+	return 0;
 
 }
